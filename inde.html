@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Mi Web con Firebase</title>
+  <script type="module" src="firebase.js"></script>
+  <script type="module" src="main.js"></script>
+</head>
+<body>
+  <h1>Mi Web con Firebase</h1>
+
+  <h2>Registro de usuario</h2>
+  <form id="registroForm">
+    <input type="email" id="email" placeholder="Email" required>
+    <input type="password" id="password" placeholder="Contraseña" required>
+    <button type="submit">Registrar</button>
+  </form>
+
+  <h2>Agregar datos</h2>
+  <form id="dataForm">
+    <input type="text" id="nombre" placeholder="Nombre">
+    <input type="number" id="edad" placeholder="Edad">
+    <button type="submit">Agregar a Firestore</button>
+  </form>
+
+  <h2>Usuarios registrados</h2>
+  <ul id="usuariosList"></ul>
+</body>
+</html>
