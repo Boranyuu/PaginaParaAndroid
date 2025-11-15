@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calendario de Actividades</title>
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="./assets/styles.css">
+    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.19/main.min.css" rel="stylesheet" />
+
+    <!-- FullCalendar -->
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.19/index.global.min.js"></script>
+
+    <!-- Firebase -->
+    <script type="module" src="./js/firebase.js"></script>
+
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+        }
+
+        .navbar {
+            z-index: 10;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 20px;
+            background-color: #102d28;
+            color: white;
+            position: fixed;
+            top: 0;
+            width: 100%;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+
+        .logo {
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        #dropdownclase {
+            position: relative;
+            display: inline-block;
+        }
+
+        .dropbtn {
+            background-color: #00796b;
+            color: white;
+            padding: 6px 12px;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background-color: white;
+            min-width: 120px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            z-index: 20;
+        }
+
+        .dropdown-content a {
+            display: block;
+            padding: 8px 12px;
+            color: black;
+            text-decoration: none;
+        }
+
+        .dropdown-content a:hover {
+            background-color: #f1f1f1;
+        }
+
+        #dropdownclase:hover .dropdown-content {
+            display: block;
+        }
+
+        #CerrarSesion button {
+            background-color: #c62828;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        #mainCalendario {
+            margin-top: 80px;
+            width: 100%;
+            height: calc(100vh - 80px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+
+        .fc-button-group {
+            padding: 10px;
+        }
+
+        #calendar {
+            width: 95%;
+            height: 100%;
+        }
+
+        #btnCrearEvento {
+            margin-bottom: 10px;
+            background-color: #00796b;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        #btnCrearEvento:hover {
+            background-color: #004d40;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.4);
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+
+        .modal-content {
+            background: #fff;
+            padding: 18px;
+            border-radius: 10px;
+            width: 500px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .modal-content label {
+            margin-top: 8px;
+            font-weight: bold;
+        }
+
+        .modal-content input,
+        .modal-content select,
+        .modal-content textarea {
+            width: 100%;
+            padding: 6px 10px;
+            margin-top: 4px;
+            box-sizing: border-box;
+        }
+
+        .close {
+            float: right;
+            cursor: pointer;
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+
+        #saveEvent {
+            background-color: #00796b;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        #deleteEvent {
+            background-color: red;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 5px;
+            display: none;
+        }
+    </style>
+</head>
+
+<body id="calendar-page">
+
+    <!-- Barra de navegación -->
+    <nav class="navbar">
+        <div id="LogoYDropdown">
+            <div class="logo">Calendario de Actividades</div>
+            <div id="dropdownclase" class="dropdown">
+                <button class="dropbtn">Opciones de Gestión</button>
+                <div class="dropdown-content">
+                    <a href="#">Gestión de Actividades</a>
+                    <a href="#">Reportes</a>
+                    <a href="#">Configuración</a>
+                </div>
+            </div>
+        </div>
+        <div id="CerrarSesion" class="nav-right">
+            <span id="nombreUsuario"></span>
+            <button id="btnCerrarSesion">Cerrar Sesión</button>
+        </div>
+    </nav>
+
+    <!-- Contenedor principal del calendario -->
+    <div id="mainCalendario">
+        <div id="calendar"></div>
+        <button id="btnCrearEvento">Crear Nueva Actividad</button>
+    </div>
+
+    <!-- Modal de creación/edición de actividad -->
+    <div id="eventModal" class="modal">
+        <div class="modal-content">
+            <span id="closeModal" class="close">&times;</span>
+            <h3 id="modalTitle">Nueva Actividad</h3>
+
+            <label>Nombre de la actividad</label>
+            <input type="text" id="actividadNombre">
+
+            <label>Tipo de actividad</label>
+            <select id="actividadTipo">
+                <option value="">Cargando...</option>
+            </select>
+
+            <label>Descripción</label>
+            <textarea id="actividadDescripcion"></textarea>
+
+            <label>Beneficiarios (separados por comas)</label>
+            <input type="text" id="actividadBeneficiarios">
+
+            <label>Lugar</label>
+            <select id="actividadLugar">
+                <option value="">Cargando...</option>
+            </select>
+
+            <label>Socio Comunitario</label>
+            <select id="actividadSocioComunitario">
+                <option value="">Cargando...</option>
+            </select>
+
+            <label>Oferente</label>
+            <select id="actividadOferente">
+                <option value="">Cargando...</option>
+            </select>
+
+            <label>Periodicidad</label>
+            <select id="actividadPeriodicidad">
+                <option value="Puntual">Puntual</option>
+                <option value="Semanal">Semanal</option>
+                <option value="Mensual">Mensual</option>
+            </select>
+
+            <label>Frecuencia</label>
+            <input type="text" id="actividadFrecuencia">
+
+            <label>Fecha de inicio</label>
+            <input type="date" id="actividadFechaInicio">
+
+            <label>Duración (minutos)</label>
+            <input type="number" id="actividadDuracion">
+
+            <label>Cupo máximo</label>
+            <input type="number" id="actividadCupo">
+
+            <label>Días de aviso previo</label>
+            <input type="number" id="actividadDiasAviso">
+
+            <br><br>
+            <button id="saveEvent">Guardar actividad</button>
+            <button id="deleteEvent">Eliminar actividad</button>
+        </div>
+    </div>
+
+    <script type="module" src="./js/calendario.js"></script>
+</body>
+
+</html>

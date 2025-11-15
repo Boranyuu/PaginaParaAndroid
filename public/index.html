@@ -1,21 +1,47 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
   <meta charset="UTF-8">
-  <title>Crear Usuario</title>
-  <link rel="stylesheet" href="../assets/styles.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Iniciar Sesión</title>
+  <link rel="stylesheet" href="./assets/styles.css">
 </head>
-<body>
-  <h1>Formulario de Usuario</h1>
 
-  <form id="usuarioForm">
-    <input type="text" id="tipoUsuario" placeholder="Tipo de Usuario" required><br>
-    <input type="text" id="rut" placeholder="RUT (12345678-9)" required><br>
-    <input type="text" id="nombre" placeholder="Nombre" required><br>
-    <input type="password" id="contraseña" placeholder="Contraseña (mín. 6 caracteres)" required><br>
-    <input type="email" id="gmail" placeholder="Gmail" required><br>
-    <button type="submit">Crear Usuario</button>
-  </form>
+<body id="cuerpo" class="d-print-none limitedwidth format-site dir-ltr lang-es jsenabled">
+  <div id="main-content" class="d-flex justify-content-center align-items-center vh-100">
+    <div id="loginContainer" class="d-print-block">
+      <h1>Iniciar Sesión</h1>
+
+      <form id="loginForm" autocomplete="on">
+        
+        <input 
+          type="email" 
+          id="email" 
+          name="email"
+          autocomplete="email"
+          placeholder="Correo Gmail" 
+          required
+        >
+
+        <input 
+          type="password" 
+          id="contrasena" 
+          name="password"
+          autocomplete="current-password"
+          placeholder="Contraseña" 
+          required
+        >
+
+        <button type="submit">Ingresar</button>
+        <p id="mensaje"></p>
+      </form>
+
+    </div>
+  </div>
+
+  <!-- ✔ CARGA EL MAIN.JS -->
+  <script type="module" src="./js/main.js"></script>
 </body>
-<script type="module" src="./main.js"></script>
+
 </html>

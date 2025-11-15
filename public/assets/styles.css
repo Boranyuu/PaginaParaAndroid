@@ -1,0 +1,241 @@
+/* ===========================
+   BODY GENERAL
+=========================== */
+body {
+  font-family: 'Segoe UI', Arial, sans-serif;
+  margin: 0;
+  min-height: 100vh;
+  align-items: center;
+}
+
+body#admin-page,
+body#calendar-page {
+  background-color: #004d40;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 20px;
+  margin-top: 70px;
+  /* espacio para navbar */
+}
+
+body#cuerpo {
+  background-color: #00362f !important;
+  /* Fondo login */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+
+
+/* ===========================
+   NAVBAR
+=========================== */
+.navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 80px;
+  background-color: #2b3a67;
+  color: white;
+  display: flex;
+  align-items: center;
+  padding: 0 20px;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
+  z-index: 1000;
+  justify-content: space-between;
+}
+
+div#dropdownclase {
+  padding: 10px;
+}
+
+div#LogoYDropdown {
+  display: flex;
+  justify-content: space-between;
+  width: auto;
+  height: auto;
+  align-items: center;
+}
+
+.navbar .logo {
+  font-size: 1.4rem;
+  font-weight: bold;
+}
+
+.nav-right {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.nav-right button {
+  background-color: #f44336;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+  color: white;
+  transition: background 0.2s;
+}
+
+.nav-right button:hover {
+  background-color: #d32f2f;
+}
+
+/* ===========================
+   CONTENEDORES
+=========================== */
+#mainCalendario {
+  flex: 1 0 auto;
+  background-color: #ffffff;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.1);
+  margin-top: 20px;
+  width: 90%;
+  max-width: 1000px;
+}
+
+/* FullCalendar */
+#calendar {
+  height: 600px;
+  max-width: 100%;
+  margin: auto;
+}
+
+
+div#CerrarSesion {
+  align-items: center;
+  padding: 60px;
+}
+/* ===========================
+   LOGIN FORM
+=========================== */
+#loginContainer {
+    background: white;
+    padding: 25px 30px;
+    border-radius: 12px;
+    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 320px;
+}
+
+input,
+button {
+  margin: 8px 0;
+  padding: 10px;
+  width: 100%;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 1rem;
+  box-sizing: border-box;
+}
+
+input:focus {
+  outline: none;
+  border-color: #2b3a67;
+  box-shadow: 0 0 5px rgba(43, 58, 103, 0.3);
+}
+
+button {
+  background-color: #2b3a67;
+  color: white;
+  border: none;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+button:hover {
+  background-color: #1e2a50;
+}
+
+/* ===========================
+   MENSAJES
+=========================== */
+#mensaje {
+  margin-top: 10px;
+  font-weight: bold;
+  text-align: center; 
+}
+
+
+/* Dropdown Button */
+.dropbtn {
+  background-color: #04AA6D;
+  color: white;
+  padding: 16px;
+  font-size: 16px;
+  border: none;
+}
+
+/* The container <div> - needed to position the dropdown content */
+.dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+/* Dropdown Content (Hidden by Default) */
+.dropdown-content {
+  display: none;
+  position: absolute;
+  background-color: #f1f1f1;
+  min-width: 160px;
+  box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
+  z-index: 1;
+}
+
+/* Links inside the dropdown */
+.dropdown-content a {
+  color: black;
+  padding: 12px 16px;
+  text-decoration: none;
+  display: block;
+}
+
+/* Change color of dropdown links on hover */
+.dropdown-content a:hover {
+  background-color: #ddd;
+}
+
+/* Show the dropdown menu on hover */
+.dropdown:hover .dropdown-content {
+  display: block;
+}
+
+/* Change the background color of the dropdown button when the dropdown content is shown */
+.dropdown:hover .dropbtn {
+  background-color: #3e8e41;
+}
+
+/* ===========================
+   RESPONSIVE
+=========================== */
+@media (max-width: 400px) {
+
+  form,
+  ul {
+    width: 90%;
+  }
+
+  .navbar {
+    flex-direction: column;
+    height: auto;
+    padding: 10px 20px;
+  }
+
+  .nav-right {
+    margin-top: 5px;
+    gap: 10px;
+  }
+
+  #calendar {
+    height: 400px;
+  }
+}

@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Panel Administrador</title>
+  <link rel="stylesheet" href="./assets/styles.css">
+</head>
+<body id="admin-page">
+  <!-- NAVBAR -->
+  <nav class="navbar">
+    <div class="logo">MiApp Admin</div>
+    <div class="nav-buttons">
+      <span id="nombreAdmin"></span>
+      <button id="btnCerrarSesion">Cerrar Sesión</button>
+    </div>
+  </nav>
+
+  <h1>Crear Usuario</h1>
+
+  <!-- FORMULARIO CREAR USUARIO -->
+  <form id="usuarioForm">
+    <input type="text" id="tipoUsuario" placeholder="Tipo de Usuario (usuario/administrador)" required>
+    <input type="text" id="rut" placeholder="RUT (12345678-9)" required>
+    <input type="text" id="nombre" placeholder="Nombre" required>
+    <input type="password" id="contraseña" placeholder="Contraseña (mín. 6 caracteres)" required>
+    <input type="email" id="gmail" placeholder="Gmail" required>
+    <button type="submit">Crear Usuario</button>
+    <p id="mensaje"></p>
+  </form>
+
+  <!-- LISTA DE USUARIOS -->
+  <ul id="usuariosList"></ul>
+
+  <script type="module" src="./admin.js"></script>
+</body>
+</html>
