@@ -1,188 +1,119 @@
+// calendario.js
 import { db } from "./firebase.js";
-import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc }
-    from "https://www.gstatic.com/firebasejs/10.4.0/firebase-firestore.js";
+import { collection, getDocs } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-firestore.js";
+import { actividadesMap, cargarActividades } from "./actividades.js";
+import { abrirModalNuevo, abrirModalParaEditarCita, milisToISOIfNeeded, reagendarCita } from "./cita.js";
 
-document.addEventListener('DOMContentLoaded', async function () {
+document.addEventListener("DOMContentLoaded", async () => {
+  await cargarActividades();
 
-    const modal = document.getElementById('eventModal');
-    const modalTitle = document.getElementById('modalTitle');
+  // --- Obtener todas las citas como eventos para FullCalendar
+  async function fetchCitasAsEvents() {
+    const eventos = [];
 
-    const actividadNombre = document.getElementById('actividadNombre');
-    const actividadTipo = document.getElementById('actividadTipo');
-    const actividadDescripcion = document.getElementById('actividadDescripcion');
-    const actividadBeneficiarios = document.getElementById('actividadBeneficiarios');
-    const actividadLugar = document.getElementById('actividadLugar');
-    const actividadSocioComunitario = document.getElementById('actividadSocioComunitario');
-    const actividadOferente = document.getElementById('actividadOferente');
-    const actividadPeriodicidad = document.getElementById('actividadPeriodicidad');
-    const actividadFrecuencia = document.getElementById('actividadFrecuencia');
-    const actividadFechaInicio = document.getElementById('actividadFechaInicio');
-    const actividadDuracion = document.getElementById('actividadDuracion');
-    const actividadCupo = document.getElementById('actividadCupo');
-    const actividadDiasAviso = document.getElementById('actividadDiasAviso');
+    // ----- Citas en colección `citas` -----
+    try {
+      const snapCitas = await getDocs(collection(db, "citas"));
+      snapCitas.forEach(docSnap => {
+        const id = docSnap.id;
+        const data = docSnap.data();
+        const fechaISO = milisToISOIfNeeded(data.fechaHora ?? data.fechaInicio ?? data.fechaInicioMillis);
+        if (!fechaISO) return;
 
-    const saveBtn = document.getElementById('saveEvent');
-    const deleteBtn = document.getElementById('deleteEvent');
-    const btnCrear = document.getElementById('btnCrearEvento');
-
-    let actividadSeleccionada = null;
-
-    // Cargar opciones desde Firestore
-    async function cargarOpciones() {
-        const colecciones = [
-            { id: "actividadTipo", nombre: "tiposActividad" },
-            { id: "actividadLugar", nombre: "lugares" },
-            { id: "actividadSocioComunitario", nombre: "sociosComunitarios" },
-            { id: "actividadOferente", nombre: "oferentes" }
-        ];
-
-        for (const col of colecciones) {
-            const select = document.getElementById(col.id);
-            select.innerHTML = '<option value="">Seleccione...</option>';
-            const snapshot = await getDocs(collection(db, col.nombre));
-            snapshot.forEach(docSnap => {
-                const opt = document.createElement("option");
-                opt.value = docSnap.data().nombre;
-                opt.textContent = docSnap.data().nombre;
-                select.appendChild(opt);
-            });
+        let titulo = data.actividadNombre ?? "Cita";
+        if ((!titulo || titulo === "") && data.actividadId) {
+          const act = actividadesMap.get(data.actividadId);
+          if (act) titulo = act.nombre;
         }
+
+        eventos.push({
+          id,
+          title: titulo,
+          start: fechaISO,
+          editable: true,
+          extendedProps: { origen: "citasCollection", ...data }
+        });
+      });
+    } catch (err) {
+      console.error("Error cargando citas (colección):", err);
     }
 
-    await cargarOpciones();
+    // ----- Citas embebidas dentro de actividades -----
+    try {
+      for (const [actId, act] of actividadesMap.entries()) {
+        if (!Array.isArray(act.citas)) continue;
+        act.citas.forEach(c => {
+          const fechaISO = milisToISOIfNeeded(c.fechaInicio ?? c.fechaInicioMillis);
+          if (!fechaISO) return;
 
-    function abrirModal(actividad = null) {
-        modal.style.display = "flex";
-
-        if (actividad) {
-            modalTitle.textContent = "Editar Actividad";
-            actividadNombre.value = actividad.nombre;
-            actividadTipo.value = actividad.tipo;
-            actividadDescripcion.value = actividad.descripcion;
-            actividadBeneficiarios.value = actividad.beneficiarios.join(", ");
-            actividadLugar.value = actividad.lugar;
-            actividadSocioComunitario.value = actividad.socioComunitario;
-            actividadOferente.value = actividad.oferente;
-            actividadPeriodicidad.value = actividad.periodicidad;
-            actividadFrecuencia.value = actividad.frecuencia;
-            actividadFechaInicio.value = new Date(actividad.fechaInicio).toISOString().split("T")[0];
-            actividadDuracion.value = actividad.duracionMin;
-            actividadCupo.value = actividad.cupo;
-            actividadDiasAviso.value = actividad.diasAvisoPrevio;
-            actividadSeleccionada = actividad;
-            deleteBtn.style.display = "inline-block";
-        } else {
-            modalTitle.textContent = "Nueva Actividad";
-            actividadNombre.value = "";
-            actividadTipo.value = "";
-            actividadDescripcion.value = "";
-            actividadBeneficiarios.value = "";
-            actividadLugar.value = "";
-            actividadSocioComunitario.value = "";
-            actividadOferente.value = "";
-            actividadPeriodicidad.value = "Puntual";
-            actividadFrecuencia.value = "";
-            actividadFechaInicio.value = "";
-            actividadDuracion.value = "";
-            actividadCupo.value = "";
-            actividadDiasAviso.value = "";
-            actividadSeleccionada = null;
-            deleteBtn.style.display = "none";
-        }
+          eventos.push({
+            id: `${actId}__${c.id ?? Math.random().toString(36).slice(2, 9)}`,
+            title: act.nombre ?? "Cita (actividad)",
+            start: fechaISO,
+            editable: true,
+            extendedProps: {
+              origen: "citasDentroActividad",
+              actividadId: actId,
+              actividadNombre: act.nombre,
+              lugar: c.lugar ?? act.lugar,
+              duracionMin: c.duracionMin ?? act.duracionMin,
+              cupo: c.cupo ?? act.cupo,
+              ...c
+            }
+          });
+        });
+      }
+    } catch (err) {
+      console.error("Error buscando citas dentro de actividades:", err);
     }
 
-    const closeModal = document.getElementById('closeModal');
-    closeModal.onclick = () => modal.style.display = "none";
-    window.onclick = (e) => { if (e.target === modal) modal.style.display = "none"; }
+    return eventos;
+  }
 
-    const calendar = new FullCalendar.Calendar(document.getElementById('calendar'), {
-        initialView: "dayGridMonth",
-        locale: "es",
-        headerToolbar: {
-            left: 'prev,next today',
-            center: 'title',
-            right: 'dayGridMonth,timeGridWeek,timeGridDay,listWeek' // Lista agregada
-        },
-        buttonText: {
-            today: 'Hoy',
-            month: 'Mes',
-            week: 'Semana',
-            day: 'Día',
-            list: 'Lista'
-        },
-        events: async (fetchInfo, successCallback) => {
-            try {
-                const snapshot = await getDocs(collection(db, "actividades"));
-                const actividades = snapshot.docs.map(docSnap => {
-                    const data = docSnap.data();
-                    return {
-                        id: docSnap.id,
-                        title: data.nombre,
-                        start: new Date(data.fechaInicio),
-                        ...data
-                    };
-                });
-                successCallback(actividades);
-            } catch (error) {
-                console.error("Error cargando actividades:", error);
-            }
-        },
-        eventClick: info => {
-            const actividad = {
-                id: info.event.id,
-                title: info.event.title,
-                start: info.event.start,
-                ...info.event.extendedProps
-            };
-            abrirModal(actividad);
-        }
-    });
+  // --- Inicializar FullCalendar ---
+  const calendarEl = document.getElementById("calendar");
+  window.calendar = new FullCalendar.Calendar(calendarEl, { // <-- Exponer globalmente
+    initialView: "dayGridMonth",
+    locale: "es",
+    firstDay: 1,
+    headerToolbar: {
+      left: "prev,next today",
+      center: "title",
+      right: "dayGridMonth,timeGridWeek,timeGridDay,listWeek"
+    },
+    events: async (fetchInfo, successCallback, failureCallback) => {
+      try {
+        const events = await fetchCitasAsEvents();
+        successCallback(events);
+      } catch (err) {
+        console.error("Error cargando eventos:", err);
+        failureCallback(err);
+      }
+    },
+    eventClick: info => abrirModalParaEditarCita({
+      id: info.event.id,
+      start: info.event.startStr,
+      ...info.event.extendedProps
+    }),
+    eventDrop: async info => {
+      const ev = info.event;
+      try {
+        await reagendarCita(ev.id, ev.start.toISOString());
+        // Refrescar calendario luego de reagendar
+        if (window.calendar) window.calendar.refetchEvents();
+      } catch (err) {
+        console.error(err);
+        info.revert();
+        alert("Error al reagendar la cita.");
+      }
+    },
+    editable: true,
+    selectable: true
+  });
 
-    calendar.render();
+  calendar.render();
 
-    btnCrear.onclick = () => abrirModal();
-
-    saveBtn.onclick = async () => {
-        const actividad = {
-            nombre: actividadNombre.value.trim(),
-            tipo: actividadTipo.value.trim(),
-            descripcion: actividadDescripcion.value.trim(),
-            beneficiarios: actividadBeneficiarios.value.split(",").map(x => x.trim()),
-            lugar: actividadLugar.value.trim(),
-            socioComunitario: actividadSocioComunitario.value.trim(),
-            oferente: actividadOferente.value.trim(),
-            periodicidad: actividadPeriodicidad.value,
-            frecuencia: actividadFrecuencia.value.trim(),
-            fechaInicio: new Date(actividadFechaInicio.value).getTime(),
-            duracionMin: Number(actividadDuracion.value),
-            cupo: Number(actividadCupo.value),
-            diasAvisoPrevio: Number(actividadDiasAviso.value),
-            estado: "activa",
-            motivoCancelacion: null,
-            citas: []
-        };
-
-        try {
-            if (actividadSeleccionada) {
-                await updateDoc(doc(db, "actividades", actividadSeleccionada.id), actividad);
-            } else {
-                await addDoc(collection(db, "actividades"), actividad);
-            }
-            modal.style.display = "none";
-            calendar.refetchEvents();
-        } catch (error) {
-            console.error("Error guardando actividad:", error);
-        }
-    };
-
-    deleteBtn.onclick = async () => {
-        if (!actividadSeleccionada) return;
-        try {
-            await deleteDoc(doc(db, "actividades", actividadSeleccionada.id));
-            modal.style.display = "none";
-            calendar.refetchEvents();
-        } catch (error) {
-            console.error("Error eliminando actividad:", error);
-        }
-    };
+  // --- Botón crear nueva cita ---
+  const btnCrear = document.getElementById("btnCrearEvento");
+  if (btnCrear) btnCrear.addEventListener("click", abrirModalNuevo);
 });

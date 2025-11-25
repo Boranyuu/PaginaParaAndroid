@@ -1,6 +1,6 @@
 import { auth, db } from "./firebase.js";
 import { signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-auth.js";
-import { collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-firestore.js";
+import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-firestore.js";
 
 const form = document.getElementById('loginForm');
 const mensaje = document.getElementById('mensaje');
@@ -10,23 +10,24 @@ form.addEventListener('submit', async (e) => {
   mensaje.textContent = "";
 
   const email = document.getElementById('email').value.trim().toLowerCase();
-  const password = document.getElementById('contrasena').value.trim(); // <--- corregido
+  const password = document.getElementById('contrasena').value.trim();
 
   try {
-    // 1️⃣ Autenticar en Firebase Auth
+    // 1️⃣ Login en Firebase Auth
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
+    const uid = userCredential.user.uid;
 
-    // 2️⃣ Buscar información adicional en Firestore
-    const q = query(collection(db, "usuarios"), where("email", "==", email));
-    const snapshot = await getDocs(q);
+    // 2️⃣ Obtener datos del usuario por UID
+    const ref = doc(db, "usuarios", uid);
+    const snap = await getDoc(ref);
 
-    if (snapshot.empty) {
-      mensaje.textContent = "Usuario no encontrado en Firestore";
+    if (!snap.exists()) {
+      mensaje.textContent = "Usuario no registrado en Firestore";
       mensaje.style.color = "red";
       return;
     }
 
-    const user = snapshot.docs[0].data();
+    const user = snap.data();
 
     // 3️⃣ Validar estado
     if (user.estado?.toLowerCase() !== "activo") {
@@ -35,7 +36,7 @@ form.addEventListener('submit', async (e) => {
       return;
     }
 
-    // 4️⃣ Guardar datos del usuario en localStorage
+    // 4️⃣ Guardar datos en localStorage
     localStorage.setItem('usuarioActivo', JSON.stringify(user));
 
     // 5️⃣ Redirección según rol
@@ -44,7 +45,7 @@ form.addEventListener('submit', async (e) => {
     if (rol === "admin") {
       window.location.href = "./admin.html";
     } 
-    else if (rol === "gestionador") {
+    else if (rol === "gestionador" || rol === "gestor") {
       window.location.href = "./calendario.html";
     } 
     else {

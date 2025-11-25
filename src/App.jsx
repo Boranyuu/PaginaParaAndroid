@@ -14,7 +14,11 @@ export default function App() {
   useEffect(() => {
     const cargarActividades = async () => {
       const snapshot = await getDocs(collection(db, "actividades"));
-      const data = snapshot.docs.map((d) => ({ id: d.id, ...d.data() }));
+      const data = snapshot.docs.map((d) => ({
+        id: d.id,
+        title: d.data().title,
+        start: d.data().date, // ← FullCalendar requiere "start"
+      }));
       setEvents(data);
     };
     cargarActividades();
@@ -27,7 +31,10 @@ export default function App() {
 
     const nuevaActividad = { title, date };
     const docRef = await addDoc(collection(db, "actividades"), nuevaActividad);
-    setEvents([...events, { id: docRef.id, ...nuevaActividad }]);
+
+    // Convertir date → start para FullCalendar
+    setEvents([...events, { id: docRef.id, title, start: date }]);
+
     setTitle("");
     setDate("");
   };

@@ -1,9 +1,9 @@
-// Importa Firebase
+// firebase.js
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-app.js";
 import { getFirestore } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-firestore.js";
-import { getAuth } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-auth.js"; // 👈 Agregado
+import { getAuth } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-auth.js";
 
-// Configuración de tu proyecto Firebase
+// Configuración de Firebase
 const firebaseConfig = {
   apiKey: "AIzaSyAJ3aFHGtmDdD4GnRjhUylG2ODYEbaxIRk",
   authDomain: "database-android-a30f4.firebaseapp.com",
@@ -16,10 +16,7 @@ const firebaseConfig = {
 
 // Inicializar Firebase
 const app = initializeApp(firebaseConfig);
-
-// Inicializar servicios
 const db = getFirestore(app);
-const auth = getAuth(app); // 👈 Agregado
+const auth = getAuth(app);
 
-// Exportar ambos
-export { db, auth }; // 👈 Agregado
+export { db, auth };
