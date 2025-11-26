@@ -13,9 +13,6 @@
   <!-- FullCalendar -->
   <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.19/index.global.min.js"></script>
 
-  <!-- Firebase -->
-  <script type="module" src="./js/firebase.js"></script>
-
   <style>
     body { margin: 0; font-family: Arial, sans-serif; }
     .navbar { z-index: 10; display: flex; justify-content: space-between; align-items: center; padding: 10px 20px; background-color: #102d28; color: white; position: fixed; top: 0; width: 100%; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
@@ -153,9 +150,11 @@
     </div>
   </div>
 
-  <!-- SCRIPTS -->
+  <!-- SCRIPTS MÓDULOS (orden correcto) -->
+  <script type="module" src="./js/firebase.js"></script>
   <script type="module" src="./js/actividades.js"></script>
-  <script type="module" src="./js/calendario.js"></script>
   <script type="module" src="./js/cita.js"></script>
+  <script type="module" src="./js/calendario.js"></script>
+
 </body>
 </html>

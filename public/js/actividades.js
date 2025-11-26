@@ -1,3 +1,4 @@
+// actividades.js
 import {
   collection,
   getDocs,
