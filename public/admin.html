@@ -4,12 +4,151 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Panel Administrador</title>
-  <link rel="stylesheet" href="./assets/styles.css">
+
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: Arial, sans-serif;
+    }
+
+    body#admin-page {
+      margin: 0;
+      min-height: 100vh;
+      background: linear-gradient(135deg, #0f3d36, #102d28, #194a42);
+      padding-top: 90px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .navbar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      background: #102d28;
+      padding: 12px 25px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: white;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+      z-index: 1000;
+    }
+
+    .logo {
+      font-size: 1.2rem;
+      font-weight: bold;
+    }
+
+    .nav-buttons {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .nav-buttons button {
+      background-color: #c62828;
+      border: none;
+      padding: 6px 14px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+      color: white;
+      transition: background 0.2s ease;
+    }
+
+    .nav-buttons button:hover {
+      background-color: #8e0000;
+    }
+
+    h1 {
+      color: white;
+      margin-bottom: 20px;
+    }
+
+    #usuarioForm {
+      background: white;
+      padding: 25px;
+      border-radius: 14px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+      width: 100%;
+      max-width: 520px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    #usuarioForm input,
+    #usuarioForm select {
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      font-size: 0.95rem;
+    }
+
+    #usuarioForm button {
+      background: #00796b;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-weight: bold;
+      cursor: pointer;
+      padding: 12px;
+      transition: background 0.3s ease;
+    }
+
+    #usuarioForm button:hover {
+      background: #004d40;
+    }
+
+    #mensaje {
+      text-align: center;
+      font-weight: bold;
+      margin-top: 10px;
+      color: #004d40;
+      background: #e0f2f1;
+      padding: 8px;
+      border-radius: 6px;
+    }
+
+    #usuariosList {
+      margin-top: 25px;
+      list-style: none;
+      padding: 0;
+      width: 100%;
+      max-width: 700px;
+    }
+
+    #usuariosList li {
+      background: #ffffff;
+      margin-bottom: 12px;
+      padding: 15px;
+      border-radius: 12px;
+      font-size: 0.95rem;
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    }
+
+    #usuariosList li strong {
+      color: #102d28;
+    }
+
+    @media (max-width: 600px) {
+      #usuarioForm,
+      #usuariosList {
+        width: 95%;
+      }
+    }
+  </style>
 </head>
+
 <body id="admin-page">
-  <!-- NAVBAR -->
+
   <nav class="navbar">
-    <div class="logo">MiApp Admin</div>
+    <div class="logo">Panel Administrador</div>
     <div class="nav-buttons">
       <span id="nombreAdmin"></span>
       <button id="btnCerrarSesion">Cerrar Sesión</button>
@@ -18,20 +157,39 @@
 
   <h1>Crear Usuario</h1>
 
-  <!-- FORMULARIO CREAR USUARIO -->
   <form id="usuarioForm">
-    <input type="text" id="tipoUsuario" placeholder="Tipo de Usuario (usuario/administrador)" required>
-    <input type="text" id="rut" placeholder="RUT (12345678-9)" required>
-    <input type="text" id="nombre" placeholder="Nombre" required>
-    <input type="password" id="contraseña" placeholder="Contraseña (mín. 6 caracteres)" required>
-    <input type="email" id="gmail" placeholder="Gmail" required>
+
+    <input type="text" id="nombre" placeholder="Nombre del usuario" required>
+
+    <input type="email" id="email" placeholder="Correo electrónico" required>
+
+    <input type="password" id="password" placeholder="Contraseña inicial" required>
+
+    <input type="text" id="rol" placeholder="Rol (gestor, administrador, usuario)" required>
+
+    <select id="estado" required>
+      <option value="activo">Activo</option>
+      <option value="inactivo">Inactivo</option>
+    </select>
+
+    <select id="aprobado" required>
+      <option value="true">Aprobado</option>
+      <option value="false">No aprobado</option>
+    </select>
+
+    <select id="emailVerificado" required>
+      <option value="true">Email verificado</option>
+      <option value="false">Email no verificado</option>
+    </select>
+
     <button type="submit">Crear Usuario</button>
     <p id="mensaje"></p>
+
   </form>
 
-  <!-- LISTA DE USUARIOS -->
   <ul id="usuariosList"></ul>
 
-  <script type="module" src="./admin.js"></script>
+  <script type="module" src="./js/admin.js"></script>
+
 </body>
 </html>

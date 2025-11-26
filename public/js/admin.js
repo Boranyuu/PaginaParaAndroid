@@ -1,11 +1,10 @@
-import { db } from '../firebase.js';
+import { db } from './firebase.js';
 import { 
   collection, 
   addDoc, 
-  query, 
-  where, 
   getDocs 
 } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-firestore.js";
+
 import { 
   getAuth, 
   createUserWithEmailAndPassword, 
@@ -21,7 +20,7 @@ if (!usuarioActivo || usuarioActivo.rol.toLowerCase() !== "admin") {
   window.location.href = "./index.html";
 }
 
-// ✅ Mostrar nombre en navbar
+// ✅ Mostrar admin en navbar
 document.getElementById('nombreAdmin').textContent = usuarioActivo.nombre;
 
 // ✅ Cerrar sesión
@@ -34,63 +33,82 @@ document.getElementById('btnCerrarSesion').addEventListener('click', async () =>
 const usuarioForm = document.getElementById('usuarioForm');
 const usuariosList = document.getElementById('usuariosList');
 
-// ✅ Registrar nuevo usuario
+// ✅ Generar contraseña segura aleatoria
+function generarPassword() {
+  return Math.random().toString(36).slice(-10) + "!";
+}
+
+// ✅ Registrar usuario
 usuarioForm.addEventListener('submit', async (e) => {
   e.preventDefault();
 
-  const rol = document.getElementById('tipoUsuario').value.trim();
-  const rut = document.getElementById('rut').value.trim();
   const nombre = document.getElementById('nombre').value.trim();
-  const contraseña = document.getElementById('contraseña').value.trim();
   const email = document.getElementById('email').value.trim();
+  const rol = document.getElementById('rol').value;
 
-  if (!rol || !rut || !nombre || !contraseña || !email) {
-    alert("Todos los campos son obligatorios");
+  const estado = document.getElementById('estado').value;
+  const aprobado = document.getElementById('aprobado').value === "true";
+  const emailVerificado = document.getElementById('emailVerificado').value === "true";
+
+  if (!nombre || !email || !rol) {
+    alert("Todos los campos obligatorios deben completarse");
     return;
   }
 
-  // ✅ Verificar RUT único
-  const q = query(collection(db, "usuarios"), where("rut", "==", rut));
-  const snapshot = await getDocs(q);
-  if (!snapshot.empty) {
-    alert("Ya existe un usuario con este RUT");
-    return;
-  }
+  const passwordTemporal = generarPassword();
 
   try {
-    // ✅ Crear usuario en Firebase Auth
-    const userCredential = await createUserWithEmailAndPassword(auth, email, contraseña);
+    const userCredential = await createUserWithEmailAndPassword(auth, email, passwordTemporal);
     const uid = userCredential.user.uid;
 
-    // ✅ Guardar en Firestore con la nueva estructura
     await addDoc(collection(db, "usuarios"), {
       uid,
-      email,
       nombre,
+      email,
       rol,
-      rut,
-      estado: "activo",
-      creadoEl: Date.now() // número en milisegundos
+      estado,
+      aprobado,
+      emailVerificado,
+      passwordTemporal, // puedes quitar esto en producción
+      fechaRegistro: new Date().toISOString()
     });
 
-    alert("Usuario creado correctamente");
+    alert(`✅ Usuario creado\nContraseña temporal: ${passwordTemporal}`);
     usuarioForm.reset();
     cargarUsuarios();
+
   } catch (error) {
-    alert("Error: " + error.message);
     console.error(error);
+
+    if (error.code === "auth/email-already-in-use") {
+      alert("❌ Este correo ya está registrado");
+    } else if (error.code === "auth/invalid-email") {
+      alert("❌ Email no válido");
+    } else {
+      alert("❌ Error al crear usuario");
+    }
   }
 });
 
-// ✅ Mostrar lista de usuarios
+// ✅ Listar usuarios
 async function cargarUsuarios() {
   usuariosList.innerHTML = '';
+
   const querySnapshot = await getDocs(collection(db, "usuarios"));
   
   querySnapshot.forEach((doc) => {
     const data = doc.data();
+
     const li = document.createElement('li');
-    li.textContent = `${data.rol} | ${data.nombre} | ${data.rut} | ${data.email} | ${data.estado}`;
+    li.innerHTML = `
+      <strong>${data.nombre}</strong><br>
+      📧 ${data.email}<br>
+      👤 Rol: ${data.rol}<br>
+      ✅ Estado: ${data.estado}<br>
+      ✔ Aprobado: ${data.aprobado ? "Sí" : "No"}
+      <hr>
+    `;
+    
     usuariosList.appendChild(li);
   });
 }
