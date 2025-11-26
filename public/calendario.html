@@ -88,7 +88,7 @@
       background: #fff;
       padding: 18px;
       border-radius: 10px;
-      width: 520px;
+      width: 550px;
       max-width: 95%;
       display: flex;
       flex-direction: column;
@@ -107,6 +107,8 @@
       padding: 6px 10px;
       margin-top: 4px;
       box-sizing: border-box;
+      border: 1px solid #ccc;
+      border-radius: 5px;
     }
 
     .close {
@@ -124,6 +126,7 @@
       border-radius: 5px;
       cursor: pointer;
       margin-right: 6px;
+      font-size: 0.95rem;
     }
 
     .btn-primary {
@@ -145,6 +148,40 @@
       display: flex;
       gap: 8px;
       align-items: center;
+      flex-wrap: wrap;
+    }
+
+    #diasSemana {
+      display: none;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 5px;
+      padding: 5px 0;
+    }
+
+    #diasSemana label {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-weight: normal;
+      background: #f1f1f1;
+      padding: 4px 8px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.9rem;
+    }
+
+    #diasSemana input[type="checkbox"] {
+      transform: scale(1.2);
+      cursor: pointer;
+    }
+
+    .modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      margin-top: 12px;
+      flex-wrap: wrap;
     }
   </style>
 </head>
@@ -202,7 +239,17 @@
         </div>
       </div>
 
-      <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:10px;">
+      <div id="diasSemana">
+        <label><input type="checkbox" value="0">Domingo</label>
+        <label><input type="checkbox" value="1">Lunes</label>
+        <label><input type="checkbox" value="2">Martes</label>
+        <label><input type="checkbox" value="3">Miércoles</label>
+        <label><input type="checkbox" value="4">Jueves</label>
+        <label><input type="checkbox" value="5">Viernes</label>
+        <label><input type="checkbox" value="6">Sábado</label>
+      </div>
+
+      <div class="modal-actions">
         <button id="btnReagendarCita" class="btn btn-info" style="display:none;">Reagendar</button>
         <button id="btnEliminarCita" class="btn btn-danger" style="display:none;">Eliminar</button>
         <button id="btnGuardarCita" class="btn btn-primary">Guardar</button>
@@ -255,7 +302,7 @@
       <input type="number" id="cupoActividad" min="1" />
 
       <label for="periodicidadActividad">Periodicidad:</label>
-      <select id="periodicidadActividad">
+      <select id="periodicidadActividad" class="periodicidad">
         <option value="Única">Única</option>
         <option value="Diaria">Diaria</option>
         <option value="Semanal">Semanal</option>
@@ -265,7 +312,7 @@
       <label for="descripcionActividad">Descripción:</label>
       <textarea id="descripcionActividad"></textarea>
 
-      <div style="display:flex; justify-content:flex-end; margin-top:10px;">
+      <div class="modal-actions">
         <button id="btnGuardarActividad" class="btn btn-primary">Guardar</button>
       </div>
     </div>
@@ -280,14 +327,10 @@
   <script>
     const btnCerrarSesion = document.getElementById("btnCerrarSesion");
     btnCerrarSesion.addEventListener("click", () => {
-      // Limpiar token/localStorage si es necesario
       localStorage.removeItem("token");
-      // Redirigir a la página de inicio
       window.location.href = "index.html";
     });
   </script>
-
-
 </body>
 
 </html>

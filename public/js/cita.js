@@ -15,32 +15,14 @@ import { actividadesMap } from "./actividades.js";
 
 export const CITAS_COL = "citas";
 
-const modal = document.getElementById("modalCita");
-const modalClose = document.getElementById("closeModal");
-const modalTitle = document.getElementById("modalTitulo");
-const idCitaInput = document.getElementById("idCitaSeleccionada");
-const actividadSelect = document.getElementById("actividadSelect");
-
-const actNombre = document.getElementById("actNombre");
-const actTipo = document.getElementById("actTipo");
-const actLugar = document.getElementById("actLugar");
-const actOferente = document.getElementById("actOferente");
-const actBeneficiarios = document.getElementById("actBeneficiarios");
-const actDuracion = document.getElementById("actDuracion");
-const actCupo = document.getElementById("actCupo");
-const actPeriodicidad = document.getElementById("actPeriodicidad");
-const datosActividadDiv = document.getElementById("datosActividad");
-
-const fechaCita = document.getElementById("fechaCita");
-const horaCita = document.getElementById("horaCita");
-
-const btnGuardar = document.getElementById("btnGuardarCita");
-const btnEliminar = document.getElementById("btnEliminarCita");
-const btnReagendar = document.getElementById("btnReagendarCita");
+let modal, modalClose, modalTitle, idCitaInput, actividadSelect;
+let actNombre, actTipo, actLugar, actOferente, actBeneficiarios, actDuracion, actCupo, actPeriodicidad, datosActividadDiv;
+let fechaCita, horaCita, diasSemanaDiv, periodicidadSelect;
+let btnGuardar, btnEliminar, btnReagendar;
 
 export let citaSeleccionada = null;
 
-// --- Fechas
+// --- UTILIDADES FECHA
 export function milisToISOIfNeeded(value) {
   if (!value) return null;
   if (typeof value === "number") return new Date(value).toISOString();
@@ -70,96 +52,137 @@ export function isoToDateAndTimeParts(isoOrMillis) {
   return { date: `${yyyy}-${mm}-${dd}`, time: `${hh}:${min}` };
 }
 
-// --- Modales
-export function showModal() { modal.style.display = "flex"; }
-export function hideModal() { modal.style.display = "none"; }
+// --- INICIALIZACIÓN DEL DOM
+function initDOMElements() {
+  modal = document.getElementById("modalCita");
+  modalClose = document.getElementById("closeModal");
+  modalTitle = document.getElementById("modalTitulo");
+  idCitaInput = document.getElementById("idCitaSeleccionada");
+  actividadSelect = document.getElementById("actividadSelect");
+
+  actNombre = document.getElementById("actNombre");
+  actTipo = document.getElementById("actTipo");
+  actLugar = document.getElementById("actLugar");
+  actOferente = document.getElementById("actOferente");
+  actBeneficiarios = document.getElementById("actBeneficiarios");
+  actDuracion = document.getElementById("actDuracion");
+  actCupo = document.getElementById("actCupo");
+  actPeriodicidad = document.getElementById("actPeriodicidad");
+  datosActividadDiv = document.getElementById("datosActividad");
+
+  fechaCita = document.getElementById("fechaCita");
+  horaCita = document.getElementById("horaCita");
+  diasSemanaDiv = document.getElementById("diasSemana");
+  periodicidadSelect = document.getElementById("periodicidadCita");
+
+  btnGuardar = document.getElementById("btnGuardarCita");
+  btnEliminar = document.getElementById("btnEliminarCita");
+  btnReagendar = document.getElementById("btnReagendarCita");
+
+  // --- EVENTOS DEL MODAL
+  if (modalClose) modalClose.addEventListener("click", hideModal);
+  window.addEventListener("click", e => { if (e.target === modal) hideModal(); });
+  if (actividadSelect) actividadSelect.addEventListener("change", () => llenarDatosActividad(actividadSelect.value));
+  if (btnGuardar) btnGuardar.addEventListener("click", onGuardarCita);
+  if (btnEliminar) btnEliminar.addEventListener("click", onEliminarCita);
+  if (btnReagendar) btnReagendar.addEventListener("click", onReagendarCita);
+}
+
+// --- MODAL
+export function showModal() { if (modal) modal.style.display = "flex"; }
+export function hideModal() { if (modal) modal.style.display = "none"; }
 
 export function abrirModalNuevo() {
   citaSeleccionada = null;
+  if (!idCitaInput) return;
   idCitaInput.value = "";
-  modalTitle.textContent = "Crear Cita";
-  actividadSelect.value = "";
-  datosActividadDiv.style.display = "none";
-  actNombre.textContent = "";
-  actTipo.textContent = "";
-  actLugar.textContent = "";
-  actOferente.textContent = "";
-  actBeneficiarios.textContent = "";
-  actDuracion.textContent = "";
-  actCupo.textContent = "";
-  actPeriodicidad.textContent = "";
-  fechaCita.value = "";
-  horaCita.value = "";
-  btnEliminar.style.display = "none";
-  btnReagendar.style.display = "none";
-  btnGuardar.style.display = "inline-block";
+  if (modalTitle) modalTitle.textContent = "Crear Cita";
+  if (actividadSelect) actividadSelect.value = "";
+  if (datosActividadDiv) datosActividadDiv.style.display = "none";
+  if (actNombre) actNombre.textContent = "";
+  if (actTipo) actTipo.textContent = "";
+  if (actLugar) actLugar.textContent = "";
+  if (actOferente) actOferente.textContent = "";
+  if (actBeneficiarios) actBeneficiarios.textContent = "";
+  if (actDuracion) actDuracion.textContent = "";
+  if (actCupo) actCupo.textContent = "";
+  if (actPeriodicidad) actPeriodicidad.textContent = "";
+  if (fechaCita) fechaCita.value = "";
+  if (horaCita) horaCita.value = "";
+  if (diasSemanaDiv) {
+    diasSemanaDiv.style.display = "none";
+    diasSemanaDiv.querySelectorAll("input").forEach(i => i.checked = false);
+  }
+  if (periodicidadSelect) {
+    periodicidadSelect.value = "Única";
+    periodicidadSelect.disabled = true;
+  }
+  if (btnEliminar) btnEliminar.style.display = "none";
+  if (btnReagendar) btnReagendar.style.display = "none";
+  if (btnGuardar) btnGuardar.style.display = "inline-block";
   showModal();
 }
 
 export function abrirModalParaEditarCita(cita) {
+  if (!cita) return;
   citaSeleccionada = { id: cita.id, ...cita.extendedProps };
-  idCitaInput.value = citaSeleccionada.id || "";
-  modalTitle.textContent = "Editar/Ver Cita";
+  if (idCitaInput) idCitaInput.value = citaSeleccionada.id || "";
+  if (modalTitle) modalTitle.textContent = "Editar/Ver Cita";
 
-  if (citaSeleccionada.actividadId) {
+  if (citaSeleccionada.actividadId && actividadSelect) {
     actividadSelect.value = citaSeleccionada.actividadId;
     llenarDatosActividad(actividadSelect.value);
-  } else {
-    actNombre.textContent = citaSeleccionada.actividadNombre || "";
-    actTipo.textContent = citaSeleccionada.tipo || "";
-    actLugar.textContent = citaSeleccionada.lugar || "";
-    actOferente.textContent = citaSeleccionada.oferente || "";
-    actBeneficiarios.textContent = Array.isArray(citaSeleccionada.beneficiarios)
-      ? citaSeleccionada.beneficiarios.join(", ")
-      : citaSeleccionada.beneficiarios ?? "";
-    actDuracion.textContent = (citaSeleccionada.duracionMin ?? "") + (citaSeleccionada.duracionMin ? " min" : "");
-    actCupo.textContent = citaSeleccionada.cupo ?? "";
-    actPeriodicidad.textContent = citaSeleccionada.periodicidad ?? "";
-    datosActividadDiv.style.display = "block";
   }
 
-  const parts = isoToDateAndTimeParts(
-    cita.start ?? cita.fechaHora ?? cita.fechaInicio ?? cita.fechaInicioMillis
-  );
-  fechaCita.value = parts.date;
-  horaCita.value = parts.time;
+  const parts = isoToDateAndTimeParts(cita.start ?? cita.fechaHora ?? cita.fechaInicio ?? cita.fechaInicioMillis);
+  if (fechaCita) fechaCita.value = parts.date;
+  if (horaCita) horaCita.value = parts.time;
 
-  btnEliminar.style.display = "inline-block";
-  btnReagendar.style.display = "inline-block";
-  btnGuardar.style.display = "inline-block";
+  const actividad = actividadesMap.get(citaSeleccionada.actividadId);
+  if (diasSemanaDiv) diasSemanaDiv.style.display = actividad?.periodicidad === "Semanal" ? "flex" : "none";
 
+  if (btnEliminar) btnEliminar.style.display = "inline-block";
+  if (btnReagendar) btnReagendar.style.display = "inline-block";
+  if (btnGuardar) btnGuardar.style.display = "inline-block";
   showModal();
 }
 
+// --- LLENAR DATOS ACTIVIDAD
 export function llenarDatosActividad(actividadId) {
   const act = actividadesMap.get(actividadId);
   if (!act) {
-    datosActividadDiv.style.display = "none";
-    actNombre.textContent = "";
-    actTipo.textContent = "";
-    actLugar.textContent = "";
-    actOferente.textContent = "";
-    actBeneficiarios.textContent = "";
-    actDuracion.textContent = "";
-    actCupo.textContent = "";
-    actPeriodicidad.textContent = "";
+    if (datosActividadDiv) datosActividadDiv.style.display = "none";
+    if (periodicidadSelect) periodicidadSelect.style.display = "none";
     return;
   }
 
-  datosActividadDiv.style.display = "block";
-  actNombre.textContent = act.nombre ?? "";
-  actTipo.textContent = act.tipo ?? "";
-  actLugar.textContent = act.lugar ?? "";
-  actOferente.textContent = act.oferente ?? act.oferenteNombre ?? "No definido";
-  actBeneficiarios.textContent = Array.isArray(act.beneficiarios)
-    ? act.beneficiarios.join(", ")
-    : act.beneficiarios ?? "";
-  actDuracion.textContent = (act.duracionMin ?? "") + (act.duracionMin ? " min" : "");
-  actCupo.textContent = act.cupo ?? "";
-  actPeriodicidad.textContent = act.periodicidad ?? "Única";
+  if (datosActividadDiv) datosActividadDiv.style.display = "block";
+  if (actNombre) actNombre.textContent = act.nombre ?? "";
+  if (actTipo) actTipo.textContent = act.tipo ?? "";
+  if (actLugar) actLugar.textContent = act.lugar ?? "";
+  if (actOferente) actOferente.textContent = act.oferente ?? act.oferenteNombre ?? "No definido";
+  if (actBeneficiarios) actBeneficiarios.textContent = Array.isArray(act.beneficiarios) ? act.beneficiarios.join(", ") : act.beneficiarios ?? "";
+  if (actDuracion) actDuracion.textContent = (act.duracionMin ?? "") + (act.duracionMin ? " min" : "");
+  if (actCupo) actCupo.textContent = act.cupo ?? "";
+  if (actPeriodicidad) actPeriodicidad.textContent = act.periodicidad ?? "Única";
+
+  // Select periodicidad
+  if (periodicidadSelect) {
+    if (act.periodicidad && act.periodicidad !== "Única") {
+      periodicidadSelect.style.display = "block";
+      periodicidadSelect.value = act.periodicidad;
+      periodicidadSelect.disabled = false;
+    } else {
+      periodicidadSelect.value = "Única";
+      periodicidadSelect.disabled = true;
+    }
+  }
+
+  // Días de semana solo si es semanal
+  if (diasSemanaDiv) diasSemanaDiv.style.display = act.periodicidad === "Semanal" ? "flex" : "none";
 }
 
-// --- Validar cupo
+// --- VALIDAR CUPO
 export async function puedeReservar(actividadId, fechaISO) {
   if (!actividadId || !fechaISO) return false;
   try {
@@ -189,42 +212,68 @@ export async function puedeReservar(actividadId, fechaISO) {
   }
 }
 
-// --- Guardar / eliminar / reagendar
-export async function guardarCita(fechaISO) {
-  const actividadId = actividadSelect.value;
+// --- GUARDAR CITA
+export async function guardarCita(fechaISO, diasSeleccionados = []) {
+  const actividadId = actividadSelect?.value;
   const actividad = actividadesMap.get(actividadId);
   if (!actividadId || !actividad) return alert("Seleccione una actividad válida.");
 
-  const citaObj = {
-    actividadId,
-    actividadNombre: actividad.nombre ?? "",
-    fechaHora: fechaISO,
-    fechaInicioMillis: Date.parse(fechaISO),
-    duracionMin: actividad.duracionMin ?? null,
-    cupo: actividad.cupo ?? null,
-    lugar: actividad.lugar ?? null,
-    oferente: actividad.oferente ?? actividad.oferenteNombre ?? null,
-    socioComunitario: actividad.socioComunitario ?? null,
-    periodicidad: actividad.periodicidad ?? "Única",
-    diasAvisoPrevio: actividad.diasAvisoPrevio ?? 0,
-    estado: "Activa",
-    fechaModificacion: Date.now()
-  };
+  const periodicidad = actividad?.periodicidad ?? "Única";
+  const fechaBase = new Date(fechaISO);
+  const citasAGuardar = [];
 
-  if (idCitaInput.value) {
-    await updateDoc(doc(db, CITAS_COL, idCitaInput.value), citaObj);
-  } else {
+  if (periodicidad === "Única") {
+    citasAGuardar.push(fechaISO);
+  } else if (periodicidad === "Diaria") {
+    for (let i = 0; i < 7; i++) {
+      const nuevaFecha = new Date(fechaBase);
+      nuevaFecha.setUTCDate(fechaBase.getUTCDate() + i);
+      citasAGuardar.push(nuevaFecha.toISOString());
+    }
+  } else if (periodicidad === "Semanal" && diasSeleccionados.length > 0) {
+    for (let semana = 0; semana < 4; semana++) {
+      diasSeleccionados.forEach(dia => {
+        const nuevaFecha = new Date(fechaBase);
+        const diff = (dia - fechaBase.getUTCDay() + 7) % 7 + semana * 7;
+        nuevaFecha.setUTCDate(fechaBase.getUTCDate() + diff);
+        citasAGuardar.push(nuevaFecha.toISOString());
+      });
+    }
+  } else if (periodicidad === "Mensual") {
+    for (let i = 0; i < 3; i++) {
+      const nuevaFecha = new Date(fechaBase);
+      nuevaFecha.setUTCMonth(fechaBase.getUTCMonth() + i);
+      citasAGuardar.push(nuevaFecha.toISOString());
+    }
+  }
+
+  for (const iso of citasAGuardar) {
+    const citaObj = {
+      actividadId,
+      actividadNombre: actividad.nombre ?? "",
+      fechaHora: iso,
+      fechaInicioMillis: Date.parse(iso),
+      duracionMin: actividad.duracionMin ?? null,
+      cupo: actividad.cupo ?? null,
+      lugar: actividad.lugar ?? null,
+      oferente: actividad.oferente ?? actividad.oferenteNombre ?? null,
+      socioComunitario: actividad.socioComunitario ?? null,
+      periodicidad,
+      diasAvisoPrevio: actividad.diasAvisoPrevio ?? 0,
+      estado: "Activa",
+      fechaModificacion: Date.now()
+    };
+
     await addDoc(collection(db, CITAS_COL), citaObj);
   }
 }
 
-// --- Eliminar cita
+// --- ELIMINAR Y REAGENDAR
 export async function eliminarCita(id) {
   if (!id) return;
   await deleteDoc(doc(db, CITAS_COL, id));
 }
 
-// --- Reagendar cita
 export async function reagendarCita(id, nuevaISO, actividadId) {
   if (!id || !nuevaISO) return;
   if (actividadId && !(await puedeReservar(actividadId, nuevaISO))) {
@@ -238,44 +287,31 @@ export async function reagendarCita(id, nuevaISO, actividadId) {
   });
 }
 
-// --- Eventos del modal
-modalClose.addEventListener("click", hideModal);
-window.addEventListener("click", e => {
-  if (e.target === modal) hideModal();
-});
-actividadSelect.addEventListener("change", () => llenarDatosActividad(actividadSelect.value));
-
-btnGuardar.addEventListener("click", async () => {
-  const fechaISO = combineDateTimeToISO(fechaCita.value, horaCita.value);
+// --- EVENTOS BOTONES
+async function onGuardarCita() {
+  const fechaISO = combineDateTimeToISO(fechaCita?.value, horaCita?.value);
   if (!fechaISO) return alert("Seleccione fecha y hora válidas.");
-
-  if (!(await puedeReservar(actividadSelect.value, fechaISO))) {
-    return alert("No hay cupos disponibles para esta fecha/hora.");
-  }
-
-  await guardarCita(fechaISO);
+  const diasSeleccionados = Array.from(diasSemanaDiv.querySelectorAll("input:checked")).map(i => Number(i.value));
+  await guardarCita(fechaISO, diasSeleccionados);
   hideModal();
-  if (window.calendar && typeof window.calendar.refetchEvents === "function") {
-    window.calendar.refetchEvents();
-  }
-});
+  if (window.calendar?.refetchEvents) window.calendar.refetchEvents();
+}
 
-btnEliminar.addEventListener("click", async () => {
-  if (!idCitaInput.value) return;
+async function onEliminarCita() {
+  if (!idCitaInput?.value) return;
   await eliminarCita(idCitaInput.value);
   hideModal();
-  if (window.calendar && typeof window.calendar.refetchEvents === "function") {
-    window.calendar.refetchEvents();
-  }
-});
+  if (window.calendar?.refetchEvents) window.calendar.refetchEvents();
+}
 
-btnReagendar.addEventListener("click", async () => {
-  if (!idCitaInput.value) return;
-  const nuevaISO = combineDateTimeToISO(fechaCita.value, horaCita.value);
+async function onReagendarCita() {
+  if (!idCitaInput?.value) return;
+  const nuevaISO = combineDateTimeToISO(fechaCita?.value, horaCita?.value);
   if (!nuevaISO) return alert("Seleccione fecha y hora válidas.");
-  await reagendarCita(idCitaInput.value, nuevaISO, actividadSelect.value);
+  await reagendarCita(idCitaInput.value, nuevaISO, actividadSelect?.value);
   hideModal();
-  if (window.calendar && typeof window.calendar.refetchEvents === "function") {
-    window.calendar.refetchEvents();
-  }
-});
+  if (window.calendar?.refetchEvents) window.calendar.refetchEvents();
+}
+
+// --- INICIALIZAR AL CARGAR DOM
+document.addEventListener("DOMContentLoaded", initDOMElements);
