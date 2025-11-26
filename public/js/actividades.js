@@ -36,16 +36,6 @@ const cupoActividad = document.getElementById("cupoActividad");
 const descripcionActividad = document.getElementById("descripcionActividad");
 const actividadSelect = document.getElementById("actividadSelect");
 
-// ==================== TEST FIRESTORE ====================
-async function testFirestore() {
-  try {
-    const snap = await getDocs(collection(db, "actividades"));
-    console.log("✅ Actividades en Firestore:", snap.docs.map(d => d.data()));
-  } catch (e) {
-    console.error("❌ Error Firestore:", e);
-  }
-}
-
 // ==================== CARGAR MANTENEDORES ====================
 async function cargarMantenedor(collectionName, selectElem, mapObj, placeholder = "Seleccione...") {
   selectElem.innerHTML = `<option value="">Cargando...</option>`;
@@ -147,18 +137,25 @@ btnCrearActividad.onclick = () => abrirModalActividad();
 btnGuardarActividad.onclick = async () => {
   if (!nombreActividad.value.trim()) return alert("Ingrese nombre");
 
+  // Crear objeto con estructura completa
   const actividadObj = {
     nombre: nombreActividad.value.trim(),
-    tipoId: tipoActividad.value,
-    lugarId: lugarActividad.value,
-    oferenteId: oferenteActividad.value,
-    socioId: socioActividad.value,
-    proyectoId: proyectoActividad.value,
+    tipo: tiposMap.get(tipoActividad.value) || "",
+    lugar: lugaresMap.get(lugarActividad.value) || "",
+    oferente: oferentesMap.get(oferenteActividad.value) || "",
+    socioComunitario: sociosMap.get(socioActividad.value) || "",
+    proyecto: proyectosMap.get(proyectoActividad.value) || "",
     beneficiarios: beneficiariosActividad.value.split(",").map(b => b.trim()).filter(b => b),
     duracionMin: duracionActividad.value ? parseInt(duracionActividad.value) : null,
     cupo: cupoActividad.value ? parseInt(cupoActividad.value) : null,
     descripcion: descripcionActividad.value || "",
-    fechaCreacion: Date.now()
+    citas: [],
+    estado: "activa",
+    fechaInicio: Date.now(),
+    periodicidad: "Única",
+    diasAvisoPrevio: 0,
+    frecuencia: null,
+    motivoCancelacion: null
   };
 
   try {
@@ -169,17 +166,16 @@ btnGuardarActividad.onclick = async () => {
     }
 
     modalActividad.style.display = "none";
-    cargarActividades();
-    alert("✅ Actividad guardada");
+    await cargarActividades();
+    alert("✅ Actividad guardada correctamente");
   } catch (err) {
     console.error("Error guardando actividad:", err);
-    alert("❌ Error al guardar");
+    alert("❌ Error al guardar la actividad");
   }
 };
 
 // ==================== INICIO ====================
 document.addEventListener("DOMContentLoaded", async () => {
-  await testFirestore();
   await cargarTodosMantenedores();
   await cargarActividades();
 });

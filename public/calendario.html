@@ -15,21 +15,83 @@
 
   <style>
     body { margin: 0; font-family: Arial, sans-serif; }
-    .navbar { z-index: 10; display: flex; justify-content: space-between; align-items: center; padding: 10px 20px; background-color: #102d28; color: white; position: fixed; top: 0; width: 100%; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+    .navbar {
+      z-index: 10;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 20px;
+      background-color: #102d28;
+      color: white;
+      position: fixed;
+      top: 0;
+      width: 100%;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
     .logo { font-weight: bold; font-size: 1.2rem; }
-    #mainCalendario { margin-top: 80px; width: 100%; height: calc(100vh - 80px); display: flex; justify-content: center; align-items: center; flex-direction: column; }
+    #mainCalendario {
+      margin-top: 80px;
+      width: 100%;
+      height: calc(100vh - 80px);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+    }
     #calendar { width: 95%; height: 100%; }
-    button { border: none; padding: 8px 16px; border-radius: 5px; cursor: pointer; color: white; margin-top: 10px; }
+    button {
+      border: none;
+      padding: 8px 16px;
+      border-radius: 5px;
+      cursor: pointer;
+      color: white;
+      margin-top: 10px;
+    }
     #btnCrearEvento { background-color: #00796b; }
     #btnCrearActividad { background-color: #ff9800; }
 
     /* MODALES */
-    .modal { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.45); justify-content:center; align-items:center; z-index:9999; }
-    .modal-content { background:#fff; padding:18px; border-radius:10px; width:520px; max-width:95%; display:flex; flex-direction:column; position:relative; }
+    .modal {
+      display: none;
+      position: fixed;
+      top:0; left:0;
+      width:100%; height:100%;
+      background: rgba(0,0,0,0.45);
+      justify-content:center;
+      align-items:center;
+      z-index:9999;
+    }
+    .modal-content {
+      background:#fff;
+      padding:18px;
+      border-radius:10px;
+      width:520px;
+      max-width:95%;
+      display:flex;
+      flex-direction:column;
+      position:relative;
+    }
     .modal-content label { margin-top: 8px; font-weight:bold; }
-    .modal-content input, .modal-content select, .modal-content textarea { width:100%; padding:6px 10px; margin-top:4px; box-sizing:border-box; }
-    .close { position:absolute; top:10px; right:15px; cursor:pointer; font-size:1.2rem; font-weight:bold; }
-    .btn { border:none; padding:8px 12px; border-radius:5px; cursor:pointer; margin-right:6px; }
+    .modal-content input, .modal-content select, .modal-content textarea {
+      width:100%;
+      padding:6px 10px;
+      margin-top:4px;
+      box-sizing:border-box;
+    }
+    .close {
+      position:absolute;
+      top:10px; right:15px;
+      cursor:pointer;
+      font-size:1.2rem;
+      font-weight:bold;
+    }
+    .btn {
+      border:none;
+      padding:8px 12px;
+      border-radius:5px;
+      cursor:pointer;
+      margin-right:6px;
+    }
     .btn-primary { background-color:#00796b; color:white; }
     .btn-danger { background-color:#c62828; color:white; }
     .btn-info { background-color:#0277bd; color:white; }
@@ -75,6 +137,7 @@
         <p><strong>Beneficiarios:</strong> <span id="actBeneficiarios"></span></p>
         <p><strong>Duración:</strong> <span id="actDuracion"></span></p>
         <p><strong>Cupo Máximo:</strong> <span id="actCupo"></span></p>
+        <p><strong>Periodicidad:</strong> <span id="actPeriodicidad"></span></p>
         <hr>
       </div>
 
@@ -108,29 +171,19 @@
       <input type="text" id="nombreActividad" required />
 
       <label for="tipoActividad">Tipo:</label>
-      <select id="tipoActividad">
-        <option value="">Cargando tipos...</option>
-      </select>
+      <select id="tipoActividad"><option value="">Cargando tipos...</option></select>
 
       <label for="lugarActividad">Lugar:</label>
-      <select id="lugarActividad">
-        <option value="">Cargando lugares...</option>
-      </select>
+      <select id="lugarActividad"><option value="">Cargando lugares...</option></select>
 
       <label for="oferenteActividad">Oferente:</label>
-      <select id="oferenteActividad">
-        <option value="">Cargando oferentes...</option>
-      </select>
+      <select id="oferenteActividad"><option value="">Cargando oferentes...</option></select>
 
       <label for="socioActividad">Socio Comunitario:</label>
-      <select id="socioActividad">
-        <option value="">Cargando socios...</option>
-      </select>
+      <select id="socioActividad"><option value="">Cargando socios...</option></select>
 
       <label for="proyectoActividad">Proyecto:</label>
-      <select id="proyectoActividad">
-        <option value="">Cargando proyectos...</option>
-      </select>
+      <select id="proyectoActividad"><option value="">Cargando proyectos...</option></select>
 
       <label for="beneficiariosActividad">Beneficiarios (separados por coma):</label>
       <input type="text" id="beneficiariosActividad" placeholder="Abuelos,Niños,Discapacitados" />
@@ -141,6 +194,14 @@
       <label for="cupoActividad">Cupo Máximo:</label>
       <input type="number" id="cupoActividad" min="1" />
 
+      <label for="periodicidadActividad">Periodicidad:</label>
+      <select id="periodicidadActividad">
+        <option value="Única">Única</option>
+        <option value="Diaria">Diaria</option>
+        <option value="Semanal">Semanal</option>
+        <option value="Mensual">Mensual</option>
+      </select>
+
       <label for="descripcionActividad">Descripción:</label>
       <textarea id="descripcionActividad"></textarea>
 
@@ -150,7 +211,7 @@
     </div>
   </div>
 
-  <!-- SCRIPTS MÓDULOS (orden correcto) -->
+  <!-- SCRIPTS -->
   <script type="module" src="./js/firebase.js"></script>
   <script type="module" src="./js/actividades.js"></script>
   <script type="module" src="./js/cita.js"></script>
