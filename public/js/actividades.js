@@ -1,16 +1,22 @@
-// actividades.js
+import {
+  collection,
+  getDocs,
+  addDoc,
+  doc,
+  updateDoc
+} from "https://www.gstatic.com/firebasejs/10.4.0/firebase-firestore.js";
+
 import { db } from "./firebase.js";
-import { collection, getDocs, addDoc, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-firestore.js";
 
 export const ACTIVIDADES_COL = "actividades";
-export const actividadesMap = new Map(); // id -> actividad
-export const oferentesMap = new Map();   // id -> nombre
-export const tiposMap = new Map();       // id -> nombre
-export const lugaresMap = new Map();     // id -> nombre
-export const sociosMap = new Map();      // id -> nombre
-export const proyectosMap = new Map();   // id -> nombre
+export const actividadesMap = new Map();
+export const oferentesMap = new Map();
+export const tiposMap = new Map();
+export const lugaresMap = new Map();
+export const sociosMap = new Map();
+export const proyectosMap = new Map();
 
-// DOM
+// ================= DOM =================
 const modalActividad = document.getElementById("modalActividad");
 const modalCloseActividad = document.getElementById("closeModalActividad");
 const btnCrearActividad = document.getElementById("btnCrearActividad");
@@ -29,19 +35,30 @@ const cupoActividad = document.getElementById("cupoActividad");
 const descripcionActividad = document.getElementById("descripcionActividad");
 const actividadSelect = document.getElementById("actividadSelect");
 
-// ---------------------------
-// Función genérica para cargar mantenedores
-// ---------------------------
+// ==================== TEST FIRESTORE ====================
+async function testFirestore() {
+  try {
+    const snap = await getDocs(collection(db, "actividades"));
+    console.log("✅ Actividades en Firestore:", snap.docs.map(d => d.data()));
+  } catch (e) {
+    console.error("❌ Error Firestore:", e);
+  }
+}
+
+// ==================== CARGAR MANTENEDORES ====================
 async function cargarMantenedor(collectionName, selectElem, mapObj, placeholder = "Seleccione...") {
-  selectElem.innerHTML = `<option value="">Cargando ${placeholder.toLowerCase()}...</option>`;
+  selectElem.innerHTML = `<option value="">Cargando...</option>`;
   mapObj.clear();
+
   try {
     const snap = await getDocs(collection(db, collectionName));
     selectElem.innerHTML = `<option value="">${placeholder}</option>`;
+
     snap.forEach(docSnap => {
       const data = docSnap.data();
       const id = docSnap.id;
       const nombre = data.nombre ?? `Item ${id}`;
+
       mapObj.set(id, nombre);
 
       const opt = document.createElement("option");
@@ -51,26 +68,22 @@ async function cargarMantenedor(collectionName, selectElem, mapObj, placeholder 
     });
   } catch (err) {
     console.error(`Error cargando ${collectionName}:`, err);
-    selectElem.innerHTML = `<option value="">Error cargando ${placeholder.toLowerCase()}</option>`;
+    selectElem.innerHTML = `<option value="">Error</option>`;
   }
 }
 
-// ---------------------------
-// Cargar todos los mantenedores
-// ---------------------------
+// ==================== CARGAR TODOS ====================
 export async function cargarTodosMantenedores() {
   await Promise.all([
     cargarMantenedor("oferentes", oferenteActividad, oferentesMap, "Seleccione un oferente"),
     cargarMantenedor("tiposActividad", tipoActividad, tiposMap, "Seleccione un tipo"),
     cargarMantenedor("lugares", lugarActividad, lugaresMap, "Seleccione un lugar"),
-    cargarMantenedor("sociosComunitarios", socioActividad, sociosMap, "Seleccione un socio comunitario"),
+    cargarMantenedor("sociosComunitarios", socioActividad, sociosMap, "Seleccione un socio"),
     cargarMantenedor("proyectos", proyectoActividad, proyectosMap, "Seleccione un proyecto")
   ]);
 }
 
-// ---------------------------
-// Cargar actividades para el select
-// ---------------------------
+// ==================== CARGAR ACTIVIDADES ====================
 export async function cargarActividades() {
   actividadSelect.innerHTML = '<option value="">Cargando actividades...</option>';
   actividadesMap.clear();
@@ -91,13 +104,11 @@ export async function cargarActividades() {
     });
   } catch (err) {
     console.error("Error cargando actividades:", err);
-    actividadSelect.innerHTML = '<option value="">Error cargando actividades</option>';
+    actividadSelect.innerHTML = '<option value="">Error cargando</option>';
   }
 }
 
-// ---------------------------
-// Abrir modal mantenedor
-// ---------------------------
+// ==================== MODAL ====================
 export function abrirModalActividad(actividadId = null) {
   idActividadInput.value = actividadId || "";
   nombreActividad.value = "";
@@ -128,66 +139,46 @@ export function abrirModalActividad(actividadId = null) {
   modalActividad.style.display = "flex";
 }
 
-// ---------------------------
-// Cerrar modal
-// ---------------------------
-modalCloseActividad.addEventListener("click", () => modalActividad.style.display = "none");
-window.addEventListener("click", e => { if (e.target === modalActividad) modalActividad.style.display = "none"; });
-btnCrearActividad.addEventListener("click", () => abrirModalActividad());
+// ==================== EVENTOS ====================
+modalCloseActividad.onclick = () => modalActividad.style.display = "none";
+btnCrearActividad.onclick = () => abrirModalActividad();
 
-// ---------------------------
-// Guardar actividad (crear o actualizar)
-// ---------------------------
-btnGuardarActividad.addEventListener("click", async () => {
-  const nombre = nombreActividad.value.trim();
-  if (!nombre) return alert("Ingrese el nombre de la actividad.");
-
-  btnGuardarActividad.disabled = true;
+btnGuardarActividad.onclick = async () => {
+  if (!nombreActividad.value.trim()) return alert("Ingrese nombre");
 
   const actividadObj = {
-    nombre,
-    tipoId: tipoActividad.value || null,
-    tipoNombre: tiposMap.get(tipoActividad.value) || "",
-    lugarId: lugarActividad.value || null,
-    lugarNombre: lugaresMap.get(lugarActividad.value) || "",
-    oferenteId: oferenteActividad.value || null,
-    oferenteNombre: oferentesMap.get(oferenteActividad.value) || "",
-    socioId: socioActividad.value || null,
-    socioNombre: sociosMap.get(socioActividad.value) || "",
-    proyectoId: proyectoActividad.value || null,
-    proyectoNombre: proyectosMap.get(proyectoActividad.value) || "",
-    beneficiarios: beneficiariosActividad.value ? beneficiariosActividad.value.split(",").map(b => b.trim()) : [],
+    nombre: nombreActividad.value.trim(),
+    tipoId: tipoActividad.value,
+    lugarId: lugarActividad.value,
+    oferenteId: oferenteActividad.value,
+    socioId: socioActividad.value,
+    proyectoId: proyectoActividad.value,
+    beneficiarios: beneficiariosActividad.value.split(",").map(b => b.trim()).filter(b => b),
     duracionMin: duracionActividad.value ? parseInt(duracionActividad.value) : null,
     cupo: cupoActividad.value ? parseInt(cupoActividad.value) : null,
-    descripcion: descripcionActividad.value.trim() || "",
-    citas: [],
-    estado: "activa",
+    descripcion: descripcionActividad.value || "",
     fechaCreacion: Date.now()
   };
 
   try {
     if (idActividadInput.value) {
-      const ref = doc(db, ACTIVIDADES_COL, idActividadInput.value);
-      await updateDoc(ref, actividadObj);
-      alert("Actividad actualizada.");
+      await updateDoc(doc(db, ACTIVIDADES_COL, idActividadInput.value), actividadObj);
     } else {
       await addDoc(collection(db, ACTIVIDADES_COL), actividadObj);
-      alert("Actividad creada.");
     }
+
     modalActividad.style.display = "none";
     cargarActividades();
+    alert("✅ Actividad guardada");
   } catch (err) {
     console.error("Error guardando actividad:", err);
-    alert("Error al guardar la actividad.");
-  } finally {
-    btnGuardarActividad.disabled = false;
+    alert("❌ Error al guardar");
   }
-});
+};
 
-// ---------------------------
-// Inicializar
-// ---------------------------
+// ==================== INICIO ====================
 document.addEventListener("DOMContentLoaded", async () => {
+  await testFirestore();
   await cargarTodosMantenedores();
   await cargarActividades();
 });
