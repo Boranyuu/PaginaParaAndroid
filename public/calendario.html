@@ -7,147 +7,36 @@
   <title>Calendario de Citas</title>
 
   <!-- CSS -->
-  <link rel="stylesheet" href="/assets/styles.css" />
+  <link rel="stylesheet" href="./assets/styles.css" />
   <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.19/main.min.css" rel="stylesheet" />
 
   <!-- FullCalendar -->
   <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.19/index.global.min.js"></script>
 
   <!-- Firebase -->
+  <script type="module" src="./js/firebase.js"></script>
 
   <style>
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-    }
-
-    .navbar {
-      z-index: 10;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 10px 20px;
-      background-color: #102d28;
-      color: white;
-      position: fixed;
-      top: 0;
-      width: 100%;
-      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-    }
-
-    .logo {
-      font-weight: bold;
-      font-size: 1.2rem;
-    }
-
-    #mainCalendario {
-      margin-top: 80px;
-      width: 100%;
-      height: calc(100vh - 80px);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      flex-direction: column;
-    }
-
-    #calendar {
-      width: 95%;
-      height: 100%;
-    }
-
-    button {
-      border: none;
-      padding: 8px 16px;
-      border-radius: 5px;
-      cursor: pointer;
-      color: white;
-      margin-top: 10px;
-    }
-
-    #btnCrearEvento {
-      background-color: #00796b;
-    }
-
-    #btnCrearActividad {
-      background-color: #ff9800;
-    }
+    body { margin: 0; font-family: Arial, sans-serif; }
+    .navbar { z-index: 10; display: flex; justify-content: space-between; align-items: center; padding: 10px 20px; background-color: #102d28; color: white; position: fixed; top: 0; width: 100%; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+    .logo { font-weight: bold; font-size: 1.2rem; }
+    #mainCalendario { margin-top: 80px; width: 100%; height: calc(100vh - 80px); display: flex; justify-content: center; align-items: center; flex-direction: column; }
+    #calendar { width: 95%; height: 100%; }
+    button { border: none; padding: 8px 16px; border-radius: 5px; cursor: pointer; color: white; margin-top: 10px; }
+    #btnCrearEvento { background-color: #00796b; }
+    #btnCrearActividad { background-color: #ff9800; }
 
     /* MODALES */
-    .modal {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0, 0, 0, 0.45);
-      justify-content: center;
-      align-items: center;
-      z-index: 9999;
-    }
-
-    .modal-content {
-      background: #fff;
-      padding: 18px;
-      border-radius: 10px;
-      width: 520px;
-      max-width: 95%;
-      display: flex;
-      flex-direction: column;
-      position: relative;
-    }
-
-    .modal-content label {
-      margin-top: 8px;
-      font-weight: bold;
-    }
-
-    .modal-content input,
-    .modal-content select,
-    .modal-content textarea {
-      width: 100%;
-      padding: 6px 10px;
-      margin-top: 4px;
-      box-sizing: border-box;
-    }
-
-    .close {
-      position: absolute;
-      top: 10px;
-      right: 15px;
-      cursor: pointer;
-      font-size: 1.2rem;
-      font-weight: bold;
-    }
-
-    .btn {
-      border: none;
-      padding: 8px 12px;
-      border-radius: 5px;
-      cursor: pointer;
-      margin-right: 6px;
-    }
-
-    .btn-primary {
-      background-color: #00796b;
-      color: white;
-    }
-
-    .btn-danger {
-      background-color: #c62828;
-      color: white;
-    }
-
-    .btn-info {
-      background-color: #0277bd;
-      color: white;
-    }
-
-    .modal-row {
-      display: flex;
-      gap: 8px;
-      align-items: center;
-    }
+    .modal { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.45); justify-content:center; align-items:center; z-index:9999; }
+    .modal-content { background:#fff; padding:18px; border-radius:10px; width:520px; max-width:95%; display:flex; flex-direction:column; position:relative; }
+    .modal-content label { margin-top: 8px; font-weight:bold; }
+    .modal-content input, .modal-content select, .modal-content textarea { width:100%; padding:6px 10px; margin-top:4px; box-sizing:border-box; }
+    .close { position:absolute; top:10px; right:15px; cursor:pointer; font-size:1.2rem; font-weight:bold; }
+    .btn { border:none; padding:8px 12px; border-radius:5px; cursor:pointer; margin-right:6px; }
+    .btn-primary { background-color:#00796b; color:white; }
+    .btn-danger { background-color:#c62828; color:white; }
+    .btn-info { background-color:#0277bd; color:white; }
+    .modal-row { display:flex; gap:8px; align-items:center; }
   </style>
 </head>
 
@@ -264,14 +153,9 @@
     </div>
   </div>
 
-<!-- Firebase -->
-<script type="module" src="/js/firebase.js"></script>
-
-<!-- SCRIPTS -->
-<script type="module" src="/js/actividades.js"></script>
-<script type="module" src="/js/calendario.js"></script>
-<script type="module" src="/js/cita.js"></script>
-
+  <!-- SCRIPTS -->
+  <script type="module" src="./js/actividades.js"></script>
+  <script type="module" src="./js/calendario.js"></script>
+  <script type="module" src="./js/cita.js"></script>
 </body>
-
 </html>
