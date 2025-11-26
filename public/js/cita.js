@@ -86,14 +86,20 @@ export function abrirModalNuevo() {
 }
 
 export function abrirModalParaEditarCita(cita) {
+  console.log("📌 abrirModalParaEditarCita llamada:", cita);
+
   citaSeleccionada = { id: cita.id, ...cita.extendedProps };
+  console.log("📌 citaSeleccionada:", citaSeleccionada);
+
   idCitaInput.value = citaSeleccionada.id || "";
   modalTitle.textContent = "Editar/Ver Cita";
 
   if (citaSeleccionada.actividadId) {
+    console.log("➡ Actividad asociada con ID:", citaSeleccionada.actividadId);
     actividadSelect.value = citaSeleccionada.actividadId;
     llenarDatosActividad(actividadSelect.value);
   } else if (citaSeleccionada.actividadNombre) {
+    console.log("➡ Cita con actividadNombre directo:", citaSeleccionada.actividadNombre);
     actNombre.textContent = citaSeleccionada.actividadNombre;
     datosActividadDiv.style.display = "block";
     actTipo.textContent = citaSeleccionada.tipo ?? "";
@@ -103,6 +109,7 @@ export function abrirModalParaEditarCita(cita) {
     actDuracion.textContent = (citaSeleccionada.duracionMin ?? "") + (citaSeleccionada.duracionMin ? " min" : "");
     actCupo.textContent = citaSeleccionada.cupo ?? "";
   } else {
+    console.log("⚠ No hay datos de actividad disponibles para esta cita");
     datosActividadDiv.style.display = "none";
   }
 
@@ -117,10 +124,13 @@ export function abrirModalParaEditarCita(cita) {
   showModal();
 }
 
-// --- Llenar datos de actividad
+
 export function llenarDatosActividad(actividadId) {
+  console.log("📌 Llenando datos de actividad para ID:", actividadId);
+
   const act = actividadesMap.get(actividadId);
   if (!act) {
+    console.warn("⚠ Actividad no encontrada en actividadesMap:", actividadId);
     datosActividadDiv.style.display = "none";
     actNombre.textContent = "";
     actTipo.textContent = "";
@@ -131,6 +141,8 @@ export function llenarDatosActividad(actividadId) {
     actCupo.textContent = "";
     return;
   }
+  console.log("✅ Datos de actividad encontrados:", act);
+
   datosActividadDiv.style.display = "block";
   actNombre.textContent = act.nombre ?? "";
   actTipo.textContent = act.tipo ?? "";
@@ -140,6 +152,7 @@ export function llenarDatosActividad(actividadId) {
   actDuracion.textContent = (act.duracionMin ?? "") + (act.duracionMin ? " min" : "");
   actCupo.textContent = act.cupo ?? "";
 }
+
 
 // --- Validar cupo
 export async function puedeReservar(actividadId, fechaISO) {
